@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShortsListo — Generador de guiones</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141c31;--line:#2c3a5b;--text:#f4f7ff;--muted:#aebbd4;--accent:#7c9cff;--green:#9bffce}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#1b2a50,#0b1020 50%);color:var(--text);font:16px/1.5 system-ui,Arial,sans-serif}main{max-width:960px;margin:auto;padding:26px 18px 55px}.tag{display:inline-block;border:1px solid #41547e;border-radius:99px;padding:5px 11px;color:var(--green);font-size:12px}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.05;letter-spacing:-1px;margin:17px 0 12px}h1 span{color:var(--accent)}p{color:var(--muted)}.layout{display:grid;grid-template-columns:1fr 1.1fr;gap:16px;margin-top:22px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:19px}h2{font-size:1.1rem;margin:0 0 14px}label{display:block;font-size:14px;font-weight:700;margin:13px 0 6px}input,select{width:100%;padding:12px;border:1px solid #3a4a70;border-radius:10px;background:#0e162a;color:var(--text);font:inherit}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#091027;width:100%;margin-top:18px}.secondary{background:#253454;color:var(--text);border:1px solid #43567e}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.output{white-space:pre-wrap;line-height:1.7;min-height:260px;font-size:14px}.empty{color:#8797b8}.badge{display:inline-block;background:#202e4c;border-radius:7px;padding:4px 8px;font-size:12px;margin:0 5px 9px 0}.notice,footer{font-size:12px;color:#93a2bf}.status{color:var(--green);font-size:13px;min-height:20px;margin-top:8px}@media(max-width:700px){.layout{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<span class="tag">GRATUITO · EN ESPAÑOL · SIN CUENTA</span>
+<h1>Tu próximo Short,<br><span>listo para crear.</span></h1>
+<p>Genera un gancho, una narración y una idea de escenas para videos verticales. Todo funciona localmente en tu navegador.</p>
+<div class="layout">
+<section class="card"><h2>Personaliza tu video</h2>
+<label for="topic">Tema del Short</label><input id="topic" maxlength="90" placeholder="Ej. animales que parecen extraterrestres">
+<div class="row"><div><label for="category">Categoría</label><select id="category"><option>Curiosidades</option><option>Animales</option><option>Ciencia</option><option>Historia</option><option>Tecnología</option><option>Misterios</option><option>Videojuegos</option><option>Otro</option></select></div>
+<div><label for="duration">Duración</label><select id="duration"><option value="15">15 segundos</option><option value="25" selected>25 segundos</option><option value="35">35 segundos</option><option value="45">45 segundos</option></select></div></div>
+<label for="tone">Estilo</label><select id="tone"><option value="intriga">Intrigante</option><option value="energetico">Enérgico</option><option value="documental">Documental</option><option value="humor">Con humor</option></select>
+<label for="audience">Público</label><select id="audience"><option>Todo público</option><option>Jóvenes</option><option>Fans de la ciencia</option><option>Gamers</option></select>
+<button class="primary" id="generate">Generar guion</button>
+<p class="notice">Esta primera versión usa plantillas creativas; no requiere API, suscripción ni conexión a un servicio de IA.</p>
+</section>
+<section class="card"><h2>Tu resultado</h2><span class="badge" id="durationBadge">25 s</span><span class="badge">Formato 9:16</span><span class="badge">Español</span>
+<div id="output" class="output empty">Escribe un tema y pulsa “Generar guion”.</div>
+<div class="buttons"><button class="secondary" id="copy">Copiar resultado</button><button class="secondary" id="download">Descargar .txt</button><button class="secondary" id="again">Otra versión</button></div><div id="status" class="status" aria-live="polite"></div>
+</section></div><footer>ShortsListo · Prototipo independiente. Comprueba los datos científicos e históricos antes de publicar. No garantiza visitas ni ingresos.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);let lastText='';
+const openers={intriga:['Hay algo sobre {t} que casi nadie conoce.','Parece normal, pero {t} es mucho más extraño de lo que imaginas.','Espera, porque este dato sobre {t} te va a sorprender.'],energetico:['¡Vamos con un dato increíble sobre {t}!','Si te gusta aprender rápido, escucha esto sobre {t}.','¡Atención! Esto es lo que hace especial a {t}.'],documental:['Hoy exploramos un tema fascinante: {t}.','Para entender {t}, hay que empezar por este detalle.','Esto es lo más interesante que debes saber sobre {t}.'],humor:['Tu cerebro no pidió este dato sobre {t}, pero aquí va.','Advertencia: después de esto vas a contarle a alguien sobre {t}.','Vamos a hablar de {t}, porque aparentemente hoy somos expertos.']};
+const bridges={intriga:['Lo interesante es que hay un detalle que cambia cómo lo ves.','Pero aquí viene la parte más curiosa.','Y eso no es todo: falta la parte importante.'],energetico:['Y atención, porque aquí se pone mejor.','Ahora viene el dato clave.','¡Pero espera, que falta lo mejor!'],documental:['Este detalle ayuda a comprender por qué es importante.','La clave está en cómo funciona y qué consecuencias tiene.','Por eso conviene observarlo desde esta perspectiva.'],humor:['Sí, suena inventado, pero toca comprobar los datos.','Parece una idea sacada de una película, ¿verdad?','La naturaleza y la tecnología no dejan de sorprender.']};
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)}
+function pick(a,n){return a[n%a.length]}
+function generate(){const t=$('topic').value.trim();if(!t){$('status').textContent='Escribe primero un tema.';$('topic').focus();return}
+const cat=$('category').value,sec=+$('duration').value,tone=$('tone').value,aud=$('audience').value,seed=hash(t+cat+tone+Date.now().toString().slice(-3));
+const hook=pick(openers[tone],seed).replaceAll('{t}',t),bridge=pick(bridges[tone],seed+2);
+const middle=`Fíjate en qué lo hace diferente, cómo se relaciona con su entorno y por qué vale la pena conocerlo. En ${cat.toLowerCase()}, los detalles pequeños pueden cambiar toda la historia.`;
+const end=tone==='humor'?'Si ya lo sabías, presume tu conocimiento; si no, ya tienes un dato para compartir.':tone==='energetico'?'Guarda este Short y compártelo con alguien que ame aprender cosas nuevas.':tone==='documental'?'Consulta una fuente fiable para conocer más y entender todos los detalles.':'¿Ya conocías este tema? Compártelo y sigue aprendiendo algo nuevo cada día.';
+let narration=sec===15?`${hook} ${bridge} ${end}`:`${hook} ${bridge} ${middle} ${end}`;
+if(sec>=35)narration=`${hook} ${bridge} Primero, identifica el dato principal y qué lo hace especial. Después, piensa en un ejemplo fácil de visualizar y explica por qué importa. ${middle} ${end}`;
+lastText=`TÍTULO SUGERIDO\n¿Qué hace tan interesante a ${t}?\n\nGANCHO\n${hook}\n\nNARRACIÓN (${sec} segundos aproximados)\n${narration}\n\nIDEA DE ESCENAS\nEscena 1: primer plano llamativo de “${t}”.\nEscena 2: muestra visualmente la idea principal con un corte dinámico.\nEscena 3: añade un ejemplo claro sin tapar al sujeto.\nEscena 4: termina con una imagen memorable y una pregunta breve.\n\nTEXTO EN PANTALLA\n${t.toUpperCase()}\nUn dato clave en pocas palabras\n\nDESCRIPCIÓN\nUna idea de ${cat.toLowerCase()} para ${aud.toLowerCase()}. Verifica los datos y añade una fuente fiable antes de publicar.\n\nHASHTAGS\n#Shorts #Curiosidades #${cat.replace(/\s/g,'')}`;
+$('output').textContent=lastText;$('output').classList.remove('empty');$('durationBadge').textContent=sec+' s';$('status').textContent='Guion creado. Verifica los datos antes de publicarlo.'}
+$('generate').onclick=generate;$('again').onclick=generate;
+$('copy').onclick=async()=>{if(!lastText){$('status').textContent='Genera un guion primero.';return}try{await navigator.clipboard.writeText(lastText);$('status').textContent='Copiado.'}catch(e){$('status').textContent='Selecciona el texto y cópialo manualmente.'}};
+$('download').onclick=()=>{if(!lastText){$('status').textContent='Genera un guion primero.';return}const u=URL.createObjectURL(new Blob([lastText],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='guion-shorts.txt';a.click();URL.revokeObjectURL(u);$('status').textContent='Descarga iniciada.'};
+$('topic').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
+</script></body></html>
